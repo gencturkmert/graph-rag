@@ -31,8 +31,8 @@ def generate_embeddings(dgi_model, data, device, name="dgi_embeddings"):
     with torch.no_grad():
         z, _, _ = dgi_model(data.x.to(device), data.edge_index.to(device))
 
-    os.makedirs("src/embeddings", exist_ok=True)
-    torch.save(z.cpu(), f"src/embeddings/{name}.pt")
+    os.makedirs("../embeddings", exist_ok=True)
+    torch.save(z.cpu(), f"../embeddings/{name}.pt")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train DGI model on Cora dataset")
@@ -57,4 +57,4 @@ if __name__ == "__main__":
     scaler = GradScaler()
 
     train_model(data, dgi_model, args.epochs, optimizer, scaler, device)
-    generate_embeddings(dgi_model, data, device, name="dgi_embeddings")
+    generate_embeddings(dgi_model, data, device, name=f"dgi_embeddings_epoch_{args.epochs}_lr_{args.lr}")
