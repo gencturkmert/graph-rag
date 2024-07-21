@@ -8,6 +8,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')
 
 from src.utils.neo_utils import get_driver
 
+# We can directly convert neo4j data to pyg geometric data. for sake of simplcitiy I used networkx for now.
+
 def neo4j_to_networkx(driver):
     graph = nx.DiGraph()  # Directed graph since citations are directional
     
