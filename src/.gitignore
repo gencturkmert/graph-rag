@@ -2,6 +2,7 @@
 .env
 
 cora/data/cora/
+embeddings/
 
 # Ignore Python bytecode files
 *.pyc

@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv, DeepGraphInfomax
+from torch_geometric.utils import from_networkx
 
 class Encoder(torch.nn.Module):
     def __init__(self, in_channels, hidden_channels, out_channels, dropout=0.5):
@@ -21,10 +22,10 @@ def corruption(x, edge_index):
 def summary(z, *args, **kwargs):
     return torch.sigmoid(z.mean(dim=0))
 
-def get_dgi_model(in_channels, hidden_channels=64, out_channels=64, dropout=0.5, lr=0.001):
+def get_dgi_model(in_channels, hidden_channels=64, out_channels=64, dropout=0.5):
     encoder = Encoder(in_channels, hidden_channels, out_channels, dropout)
     dgi_model = DeepGraphInfomax(hidden_channels=out_channels, encoder=encoder, summary=summary, corruption=corruption)
-    optimizer = torch.optim.Adam(dgi_model.parameters(), lr=lr)
+    return dgi_model
     
 def nx_to_pyg(nx_graph):
     pyg_data = from_networkx(nx_graph)
