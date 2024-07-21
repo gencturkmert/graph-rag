@@ -13,4 +13,8 @@ def get_driver():
         raise ValueError("Please set the NEO4J_URI, NEO4J_USER, and NEO4J_PASSWORD environment variables in the .env file.")
 
     driver = GraphDatabase.driver(uri, auth=(user, password))
+    
+    if driver:
+        print("Connection succesfull.")
+        
     return driver
