@@ -31,16 +31,16 @@ class RAG:
         self.index = None
         self.query_engine = None
         self.data_nx = None
-        self.data_pyg = None
         self.embedding_dim = 64
         
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print(f"Using device: {self.device}")
         
         self._init_driver()
+        self._init_data()
+        self._init_dgi()
         self._init_vector_store()
         self._init_llm()
-        self._init_data()
         
     def _init_driver():
         self.driver = get_driver()
@@ -61,21 +61,16 @@ class RAG:
     
     def _init_data():
         self.data_nx = neo4j_to_networkx(self.driver)
-        self.data_pyg = nx_to_pyg(self.data_nx)
         
-    def get_embeddings(save=False):
-        data = self.data_pyg
-        dgi_model = self.dgi
-        dgi_model.eval()
-        with torch.no_grad():
-            z, _, _ = dgi_model(data.x.to(device), data.edge_index.to(device))
-
-        if save:
-            os.makedirs("../embeddings", exist_ok=True)
-            torch.save(z.cpu(), f"../embeddings/{name}.pt")
-            
-        self.embeddings = embeddings
-        return embeddings
+    def _init_dgi():
+        self.dgi = DGIWrapper(self.data_nx,self.device)
+        
+        
+    def train_dgi():
+        self.dgi.train_model()
+        
+    def fetch_embeddings(save=False):
+        self.embeddings = self.dgi.get_embeddings(save)
     
     def add_to_vector_store(self):
         if self.data_nx is None or self.embeddings is None:
