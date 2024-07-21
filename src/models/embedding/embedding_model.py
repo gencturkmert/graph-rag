@@ -17,7 +17,7 @@ class PrecomputedEmbedding(BaseEmbedding):
         # This is a simple approach and might not be optimal for all use cases
 
         print(f"Query: {query}")
-        all_embeddings = np.array(list(self._embeddings.values()))
+        all_embeddings = np.array([tensor.numpy() for tensor in self._embeddings.values()])
         return np.mean(all_embeddings, axis=0).tolist()
 
     def _aget_query_embedding(self, query: str):

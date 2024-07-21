@@ -71,7 +71,11 @@ class RAG:
         
     def fetch_embeddings(self,save=False):
         embeddings = self.dgi.get_embeddings(save)
-        embeddings_dict = {node_id: embeddings[idx]for idx, node_id in enumerate(self.data_nx.nodes())}
+        embeddings_dict = {node: embeddings[idx]for idx, node in enumerate(self.data_nx.nodes())}
+        print("Embeddings shape:",embeddings.shape)
+        print("Embeddings dict keys shape:",len(embeddings_dict.keys()))
+        embeddings_values = np.array([tensor.numpy() for tensor in embeddings_dict.values()])
+        print("embeddings values:", embeddings_values.shape)
         self.embeddings = embeddings_dict
     
     def add_to_vector_store(self):
@@ -80,7 +84,7 @@ class RAG:
                 "Graph data or embeddings not created."
             )
 
-        batch_size = 1000
+        batch_size = 500
         nodes = list(self.data_nx.nodes(data=True))
         for i in tqdm(range(0, len(nodes), batch_size), desc="Adding to vector store"):
             batch = nodes[i : i + batch_size]
