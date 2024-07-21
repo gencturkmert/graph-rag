@@ -53,7 +53,8 @@ if __name__ == "__main__":
 
     dgi_wrapper = DGIWrapper(nx_graph,"cpu")
     dgi_wrapper.train_model()
-    dgi_wrapper.get_embeddings()
+    embed = dgi_wrapper.get_embeddings()
+    print(embed.shape)
 
     #train_model(data, dgi_model, args.epochs, optimizer, scaler, device)
     #generate_embeddings(dgi_model, data, device, name=f"dgi_embeddings_epoch_{args.epochs}_lr_{args.lr}")

@@ -14,16 +14,20 @@ def neo4j_to_networkx(driver):
     graph = nx.DiGraph()  # Directed graph since citations are directional
     
     def add_nodes(tx):
-        query = "MATCH (p:Publication) RETURN p.id as id"
+        query = "MATCH (p:Publication) RETURN p.id as id, p.title as title, p.authors as authors"
         result = tx.run(query)
         for record in result:
-            graph.add_node(record["id"])
+            node_id = record["id"]
+            node_data = {"title": record["title"], "authors": record["authors"]}
+            graph.add_node(node_id, **node_data)
     
     def add_edges(tx):
-        query = "MATCH (a:Publication)-[:CITES]->(b:Publication) RETURN a.id as source, b.id as target"
+        query = "MATCH (a:Publication)-[r:CITES]->(b:Publication) RETURN a.id as source, b.id as target"
         result = tx.run(query)
         for record in result:
-            graph.add_edge(record["source"], record["target"])
+            source = record["source"]
+            target = record["target"]
+            graph.add_edge(source, target)
     
     with driver.session() as session:
         session.execute_read(add_nodes)

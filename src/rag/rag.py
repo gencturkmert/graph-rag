@@ -70,7 +70,9 @@ class RAG:
         self.dgi.train_model()
         
     def fetch_embeddings(self,save=False):
-        self.embeddings = self.dgi.get_embeddings(save)
+        embeddings = self.dgi.get_embeddings(save)
+        embeddings_dict = {node_id: embeddings[idx]for idx, node_id in enumerate(self.data_nx.nodes())}
+        self.embeddings = embeddings_dict
     
     def add_to_vector_store(self):
         if self.data_nx is None or self.embeddings is None:
@@ -88,15 +90,14 @@ class RAG:
                 embedding = self.embeddings[node_id].tolist()
 
                 json_safe_props = json.loads(json.dumps(node_data, cls=CustomJSONEncoder))
-
-                text = f"Node ID: {node_id}, Label: {json_safe_props['label']}, "
-                text += ", ".join([f"{k}: {v}" for k, v in json_safe_props.items() if k != "label"])
+                text = f"Node ID: {node_id}, Label: {json_safe_props['title']}, "
+                text += ", ".join([f"{k}: {v}" for k, v in json_safe_props.items() if k != "title"])
 
                 metadata = {
                     "node_id": node_id,
-                    "label": json_safe_props["label"],
+                    "label": json_safe_props["title"],
                 }
-                metadata.update({k: v for k, v in json_safe_props.items() if k != "label"})
+                metadata.update({k: v for k, v in json_safe_props.items() if k != "title"})
 
                 text_node = TextNode(text=text, embedding=embedding, metadata=metadata)
                 nodes_to_add.append(text_node)
