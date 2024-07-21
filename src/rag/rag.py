@@ -16,12 +16,12 @@ from src.utils.neo_utils import *
 from src.utils.json import *
 from src.models.informax.dgi import *
 from src.models.embedding.embedding_model import *
-from src.models.llama import *
+from src.models.llama.llama import *
 from src.cora.convert_data import *
 
 
 class RAG:
-    def __init__():
+    def __init__(self):
         self.driver = None
         self.vector_store = None
         self.dgi = None
@@ -42,7 +42,7 @@ class RAG:
         self._init_vector_store()
         self._init_llm()
         
-    def _init_driver():
+    def _init_driver(self):
         self.driver = get_driver()
         
     def _init_vector_store(self):
@@ -56,20 +56,20 @@ class RAG:
             node_label="GraphNode",
         )
         
-    def _init_llm():
+    def _init_llm(self):
         self.llm, self.tokenizer = get_llama_model(device = self.device)
     
-    def _init_data():
+    def _init_data(self):
         self.data_nx = neo4j_to_networkx(self.driver)
         
-    def _init_dgi():
+    def _init_dgi(self):
         self.dgi = DGIWrapper(self.data_nx,self.device)
         
         
-    def train_dgi():
+    def train_dgi(self):
         self.dgi.train_model()
         
-    def fetch_embeddings(save=False):
+    def fetch_embeddings(self,save=False):
         self.embeddings = self.dgi.get_embeddings(save)
     
     def add_to_vector_store(self):
