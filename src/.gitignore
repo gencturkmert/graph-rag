@@ -1,0 +1,25 @@
+# Ignore .env file
+.env
+
+cora/data/cora/
+
+# Ignore Python bytecode files
+*.pyc
+__pycache__/
+
+# Ignore virtual environment directory
+venv/
+env/
+
+# Ignore IDE specific files
+.vscode/
+.idea/
+
+# Ignore log files and directories
+*.log
+logs/
+
+# Ignore other common files and directories
+*.bak
+*.swp
+.DS_Store
