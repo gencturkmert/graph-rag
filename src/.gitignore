@@ -1,7 +1,7 @@
 # Ignore .env file
 .env
 
-cora/data/cora/
+dataset/data/dblp.xml
 embeddings/
 
 # Ignore Python bytecode files
