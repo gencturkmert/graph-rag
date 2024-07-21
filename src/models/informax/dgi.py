@@ -1,7 +1,15 @@
+import sys
+import os
+import torch
+import argparse
+import networkx as nx
+import pandas as pd
 import torch
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv, DeepGraphInfomax
+from torch_geometric.data import Data
 from torch_geometric.utils import from_networkx
+from torch.cuda.amp import GradScaler, autocast
 
 class Encoder(torch.nn.Module):
     def __init__(self, in_channels, hidden_channels, out_channels, dropout=0.5):
@@ -31,3 +39,47 @@ def nx_to_pyg(nx_graph):
     pyg_data = from_networkx(nx_graph)
     pyg_data.x = torch.eye(pyg_data.num_nodes)
     return pyg_data
+
+class DGIWrapper:
+    def __init__(
+        self,
+        graph,
+        device      
+    ):
+        self.device = device
+        self.data_nx = graph
+        self.data_pyg = nx_to_pyg(self.data_nx)
+        self.dgi_model = get_dgi_model(self.data_pyg.num_features)
+        
+    def train_model(self):    
+        optimizer = torch.optim.Adam(self.dgi_model.parameters(), lr=0.001)
+        scaler = GradScaler()
+        self.dgi_model.train()
+        for epoch in range(100):
+            optimizer.zero_grad()
+            with autocast():
+                pos_z, neg_z, summary = self.dgi_model(self.data_pyg.x.to(self.device), self.data_pyg.edge_index.to(self.device))
+                loss = self.dgi_model.loss(pos_z, neg_z, summary)
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+            print(f'Epoch {epoch+1}, Loss: {loss.item()}')
+            
+    def get_embeddings(self,save=False):
+        self.dgi_model.eval()
+        with torch.no_grad():
+            z, _, _ = self.dgi_model(self.data_pyg.x.to(self.device), self.data_pyg.edge_index.to(self.device))
+
+        if save:
+            os.makedirs("../embeddings", exist_ok=True)
+            torch.save(z.cpu(), f"../embeddings/{name}.pt")
+            
+        embeddings = z.cpu()
+        return embeddings
+            
+        
+        
+        
+        
+    
+    

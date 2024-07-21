@@ -12,7 +12,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')
 
 from src.utils.neo_utils import get_driver
 from src.cora.convert_data import neo4j_to_networkx
-from src.models.informax.dgi import get_dgi_model, nx_to_pyg
+from src.models.informax.dgi import *
 
 def train_model(data, dgi_model, epochs, optimizer, scaler, device):
     dgi_model.train()
@@ -33,28 +33,27 @@ def generate_embeddings(dgi_model, data, device, name="dgi_embeddings"):
 
     os.makedirs("../embeddings", exist_ok=True)
     torch.save(z.cpu(), f"../embeddings/{name}.pt")
+    return z.cpu()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Train DGI model on Cora dataset")
-    parser.add_argument('--epochs', type=int, required=True, help='Number of training epochs')
-    parser.add_argument('--lr', type=float, required=True, help='Learning rate')
-    parser.add_argument('--device', type=int, required=True, help='GPU device number')
-    
-    args = parser.parse_args()
-    
-    device = torch.device(f'cuda:{args.device}' if torch.cuda.is_available() else 'cpu')
+    #device = torch.device(f'cuda:{args.device}' if torch.cuda.is_available() else 'cpu')
+    device = "cpu"
     print("Device:",device)
 
     driver = get_driver()
     nx_graph = neo4j_to_networkx(driver)
     print("nx graph created")
     
-    data = nx_to_pyg(nx_graph)
-    print("torch geometric data assembled")
+    #data = nx_to_pyg(nx_graph)
+    #print("torch geometric data assembled")
     
-    dgi_model = get_dgi_model(data.num_features).to(device)
-    optimizer = torch.optim.Adam(dgi_model.parameters(), lr=args.lr)
-    scaler = GradScaler()
+    #dgi_model = get_dgi_model(data.num_features).to(device)
+    #optimizer = torch.optim.Adam(dgi_model.parameters(), lr=args.lr)
+    #scaler = GradScaler()
 
-    train_model(data, dgi_model, args.epochs, optimizer, scaler, device)
-    generate_embeddings(dgi_model, data, device, name=f"dgi_embeddings_epoch_{args.epochs}_lr_{args.lr}")
+    dgi_wrapper = DGIWrapper(nx_graph,"cpu")
+    dgi_wrapper.train_model()
+    dgi_wrapper.get_embeddings()
+
+    #train_model(data, dgi_model, args.epochs, optimizer, scaler, device)
+    #generate_embeddings(dgi_model, data, device, name=f"dgi_embeddings_epoch_{args.epochs}_lr_{args.lr}")

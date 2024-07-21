@@ -18,3 +18,12 @@ def get_driver():
         print("Connection succesfull.")
         
     return driver
+
+def get_creds():
+    load_dotenv(find_dotenv())
+
+    uri = os.getenv('NEO4J_URI')
+    user = os.getenv('NEO4J_USER')
+    password = os.getenv('NEO4J_PASSWORD')
+    
+    return url, user, password
