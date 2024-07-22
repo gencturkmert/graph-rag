@@ -2,6 +2,8 @@
 .env
 
 dataset/data/dblp.xml
+dataset/data/dblp50000.xml
+
 embeddings/
 
 # Ignore Python bytecode files

@@ -18,8 +18,10 @@ def clear_database(driver):
 def insert_dblp_data(driver, file_path):
     batch_size = 500  # Adjust the batch size as needed
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-        context = etree.iterparse(file_path, events=('end',), tag='article')
+        context = etree.iterparse(file_path, events=('end',), tag='article',load_dtd=True)
         context_size = sum(1 for _ in context)
+        print("Context size:",context_size)
+        context = etree.iterparse(file_path, events=('end',), tag='article')
         batch = []
         for event, elem in tqdm(context, total=context_size, desc="Processing articles"):
             article = {
@@ -120,7 +122,7 @@ def insert_article(driver, title, year, journal, volume, number, pages, url, aut
             )
 
 def main():
-    file_path = '/home/mertgencturk/graph-rag/src/dataset/data/dblp.xml'
+    file_path = '/home/mertgencturk/graph-rag/src/dataset/data/dblp50000.xml'
     driver = get_driver()
     clear_database(driver)
     insert_dblp_data(driver, file_path)
