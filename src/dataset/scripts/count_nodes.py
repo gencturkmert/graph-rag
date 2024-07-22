@@ -13,8 +13,8 @@ driver = get_driver()
 
 def count_nodes(tx):
     query = """
-    MATCH (p:Publication)
-    RETURN count(p) AS node_count
+    MATCH (a:Article)
+    RETURN count(a) AS node_count
     """
     result = tx.run(query)
     return result.single()[0]
