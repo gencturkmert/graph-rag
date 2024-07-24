@@ -28,7 +28,7 @@ def neo4j_to_networkx(driver):
                 "year": record.get("year", ""),
                 "journal": record.get("journal", ""),
                 "volume": record.get("volume", ""),
-                "authors": None  # Initialize authors as None, will update later
+                "authors": None  
             }
             graph.add_node(node_key, **node_data)
 
@@ -38,7 +38,7 @@ def neo4j_to_networkx(driver):
         RETURN id(a) as source, id(b) as target
         """
         result = tx.run(query)
-        edge_count = 0  # Count the number of edges
+        edge_count = 0 
         for record in result:
             source = record["source"]
             target = record["target"]
@@ -56,7 +56,7 @@ def neo4j_to_networkx(driver):
         result = tx.run(query)
         for record in result:
             article_key = record["article_id"]
-            authors = ', '.join(record["authors"])  # Convert list of authors to a single string
+            authors = ', '.join(record["authors"]) 
             if graph.has_node(article_key):
                 graph.nodes[article_key]["authors"] = authors
                 count+=1
@@ -90,7 +90,6 @@ def main():
     networkx_graph = neo4j_to_networkx(driver)
     driver.close()
 
-    # You can now work with the `networkx_graph` as needed, for example, print the number of nodes and edges
     print(f"Number of nodes: {len(networkx_graph.nodes)}")
     print(f"Number of edges: {len(networkx_graph.edges)}")
     
