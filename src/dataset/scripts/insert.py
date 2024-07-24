@@ -53,7 +53,7 @@ def insert_articles_batch(driver, batch):
                 )
 
 def insert_dblp_data(driver, file_path):
-    batch_size = 100  # Adjust the batch size as needed
+    batch_size = 100 
     context = etree.iterparse(file_path, events=('end',), tag='article', load_dtd=True)
     context_size = sum(1 for _, _ in context)
     print("Context size:", context_size)
