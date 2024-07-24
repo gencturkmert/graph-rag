@@ -1,0 +1,23 @@
+CALL apoc.load.xml('file:///dblp.xml') YIELD value as dblp
+UNWIND dblp.dblp.article AS article
+MERGE (a:Article {key: article["@key"]})
+SET a.title = article.title,
+    a.year = article.year,
+    a.journal = article.journal,
+    a.volume = article.volume,
+    a.pages = article.pages,
+    a.url = article.url,
+    a.doi = article.doi,
+    a.timestamp = article.timestamp,
+    a.biburl = article.biburl,
+    a.bibsource = article.bibsource
+WITH a, article
+UNWIND article.author AS authorName
+MERGE (author:Author {name: authorName})
+MERGE (author)-[:WROTE]->(a)
+WITH a, collect(author) as authors, article
+UNWIND CASE WHEN article.cite IS NULL THEN [] ELSE article.cite END AS citeKey
+MERGE (citedArticle:Article {key: citeKey})
+MERGE (a)-[:CITES]->(citedArticle)
+WITH count(a) AS Articles, size(authors) AS Authors, count(citedArticle) AS CitedArticles
+RETURN Articles, Authors, CitedArticles
