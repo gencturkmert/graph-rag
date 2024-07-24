@@ -17,7 +17,7 @@ from src.utils.json import *
 from src.models.informax.dgi import *
 from src.models.embedding.embedding_model import *
 from src.models.llama.llama import *
-from src.cora.convert_data import *
+from src.dataset.convert_data import *
 
 
 class RAG:

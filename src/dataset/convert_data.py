@@ -18,40 +18,37 @@ def neo4j_to_networkx(driver):
                a.title as title, 
                a.year as year, 
                a.journal as journal, 
-               a.volume as volume, 
-               a.pages as pages, 
-               a.url as url
+               a.volume as volume
         """
         result = tx.run(query)
         for record in result:
             node_key = record["id"]
             node_data = {
-                "title": record.get("title", None),
-                "year": record.get("year", None),
-                "journal": record.get("journal", None),
-                "volume": record.get("volume", None),
-                "pages": record.get("pages", None),
-                "url": record.get("url", None)
+                "title": record.get("title", ""),
+                "year": record.get("year", ""),
+                "journal": record.get("journal", ""),
+                "volume": record.get("volume", ""),
+                "authors": None  # Initialize authors as None, will update later
             }
-            # Remove None values from node_data
-            node_data = {k: v for k, v in node_data.items() if v is not None}
             graph.add_node(node_key, **node_data)
 
     def add_edges(tx):
         query = """
         MATCH (a:Article)-[r:CITES]->(b:Article) 
         RETURN id(a) as source, id(b) as target
-        UNION
-        MATCH (author:Person)-[r:AUTHORED]->(a:Article)
-        RETURN id(author) as source, id(a) as target
         """
         result = tx.run(query)
+        edge_count = 0  # Count the number of edges
         for record in result:
             source = record["source"]
             target = record["target"]
             graph.add_edge(source, target)
+            edge_count += 1
+        
+        print(f"Total CITES edges added: {edge_count}")
             
     def add_authors(tx):
+        count = 0
         query = """
         MATCH (a:Article)<-[:AUTHORED]-(author:Person)
         RETURN id(a) as article_id, collect(author.name) as authors
@@ -59,16 +56,34 @@ def neo4j_to_networkx(driver):
         result = tx.run(query)
         for record in result:
             article_key = record["article_id"]
-            authors = record["authors"]
+            authors = ', '.join(record["authors"])  # Convert list of authors to a single string
             if graph.has_node(article_key):
                 graph.nodes[article_key]["authors"] = authors
+                count+=1
+        print("Added author number:",count)
 
     with driver.session() as session:
         session.read_transaction(add_nodes)
-        session.read_transaction(add_edges)
         session.read_transaction(add_authors)
+        session.read_transaction(add_edges)
 
     return graph
+
+def check_uniform_attributes(graph):
+    nodes_iter = iter(graph.nodes(data=True))
+    _, first_node_data = next(nodes_iter)
+    standard_attributes = set(first_node_data.keys())
+    count=0
+    for node_id, node_data in graph.nodes(data=True):
+        node_attributes = set(node_data.keys())
+        if node_attributes != standard_attributes:
+            count+=1
+            """ print(f"Node {node_id} has different attributes.")
+            print(f"Expected attributes: {standard_attributes}")
+            print(f"Actual attributes: {node_attributes}")
+            print() """
+            
+    print(f"There is {count} nodes with problamtic attributes")
 
 def main():
     driver = get_driver()
@@ -78,7 +93,9 @@ def main():
     # You can now work with the `networkx_graph` as needed, for example, print the number of nodes and edges
     print(f"Number of nodes: {len(networkx_graph.nodes)}")
     print(f"Number of edges: {len(networkx_graph.edges)}")
-
+    
+    check_uniform_attributes(networkx_graph)
+    
 if __name__ == "__main__":
     main()
 
